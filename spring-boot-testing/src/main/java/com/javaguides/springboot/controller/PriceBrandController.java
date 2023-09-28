@@ -3,6 +3,7 @@ package com.javaguides.springboot.controller;
 
 import com.javaguides.springboot.dto.PricesDto;
 import com.javaguides.springboot.dto.PricesExamDto;
+import com.javaguides.springboot.exception.ResourceNotFoundException;
 import com.javaguides.springboot.mapper.PricesExamMapper;
 import com.javaguides.springboot.mapper.PricesMapper;
 import com.javaguides.springboot.model.BRAND;
@@ -132,6 +133,7 @@ public class PriceBrandController {
      * Metodo Post para crear Price y Brand a partir de Json:
      *   --> Url: http://localhost:8080/api/prices/price
      *   --> Entrada: archivo Json con los datos para crear Price y Brand
+     *   --> Proceso: se comprueba si existe Brand para asociarlo al producto, si no existe se devuelve pagina HTTP, NOT_FOUND
      *   --> Salida:
      *               -> Se devuelve Price creado PriceDto
      *      PricesDto Localización: /src/main/java/com.javaguides.springboot/dto/PricesDto
@@ -142,26 +144,19 @@ public class PriceBrandController {
 
     @PostMapping("/price")
     @ResponseStatus(HttpStatus.CREATED)
-    public PricesDto createPrice(@RequestBody PricesDto priceDto) {
+    public ResponseEntity<PricesDto> createPrice(@RequestBody PricesDto priceDto) {
         PRICES priceToSave = PricesMapper.mapToPrices(priceDto);
-        BRAND brand = new BRAND();
-        brand.setName("");
-        brand.setDescription("");
+        Optional<BRAND> brand = priceBrandService.getBrandById(priceDto.getBRAND_ID());
 
-        if(!priceBrandService.getBrandById(priceDto.getBRAND_ID()).isEmpty()){
-            brand = priceBrandService.getBrandById(priceDto.getBRAND_ID()).get();
-
-            Set<PRICES> pricesSet = new HashSet<>();
-            pricesSet.add(priceToSave);
-            brand.setPrices(pricesSet);
-            System.out.println("Se mete aqui");
+        if(brand.isEmpty()){
+            return new ResponseEntity<PricesDto>(new PricesDto(), HttpStatus.NOT_FOUND);
         }
 
-        priceToSave.setBrand(brand);
+        priceToSave.setBrand(brand.get());
 
-        priceBrandService.savePriceBrand(priceToSave, brand);
+        priceBrandService.savePriceBrand(priceToSave, brand.get());
 
-        return PricesMapper.mapToPricesDto(priceToSave);
+        return new ResponseEntity<PricesDto>(PricesMapper.mapToPricesDto(priceToSave), HttpStatus.OK);
     }
 
     @Operation(
@@ -176,6 +171,9 @@ public class PriceBrandController {
      * Metodo PUT para crear Price y Brand a partir de Json:
      *   --> Url: http://localhost:8080/api/prices/price
      *   --> Entrada: archivo Json con los datos para actualizar Price
+     *  --> Proceso: Se comprueba si el id pasado como parametro en la url coincide con el id del priceDto, en caso contrario, se
+     *               se devuelve pagina Not Found
+     *               Se comprueba si existe Brand por el Id dado en la base de datos, en caso contrario, se devuelve pagina Not Found
      *   --> Salida:
      *               -> Se devuelve Price actualizado PriceDto
      *      PricesDto Localización: /src/main/java/com.javaguides.springboot/dto/PricesDto
@@ -185,19 +183,29 @@ public class PriceBrandController {
      */
 
     @PutMapping("/price/{id}")
-    public ResponseEntity<PricesDto> updatePrice(@PathVariable int id ,@RequestBody PRICES price) {
-        return priceBrandService.getPriceById(id).map(savedPrice ->{
-            savedPrice.setPrice(price.getPrice());
-            savedPrice.setPRICE_ID(price.getPRICE_ID());
-            savedPrice.setPRICE_LIST(price.getPRICE_LIST());
-            savedPrice.setCURR(price.getCURR());
-            savedPrice.setPRODUCT_ID(price.getPRODUCT_ID());
-            savedPrice.setSTART_DATE(price.getSTART_DATE());
-            savedPrice.setEND_DATE(price.getEND_DATE());
-            savedPrice.setPRIORITY(price.getPRIORITY());
+    public ResponseEntity<PricesDto> updatePrice(@PathVariable int id ,@RequestBody PricesDto priceDto) {
+        Optional<BRAND> brand = priceBrandService.getBrandById(priceDto.getBRAND_ID());
 
-            if(price.getBrand()!=null){
-                savedPrice.setBrand(price.getBrand());
+        if(id!=priceDto.getPRICE_ID()){
+            return new ResponseEntity<PricesDto>(new PricesDto(), HttpStatus.NOT_FOUND);
+        }
+
+        if(brand.isEmpty()){
+            return new ResponseEntity<PricesDto>(new PricesDto(), HttpStatus.NOT_FOUND);
+        }
+
+        return priceBrandService.getPriceById(id).map(savedPrice ->{
+            savedPrice.setPrice(priceDto.getPrice());
+            savedPrice.setPRICE_ID(priceDto.getPRICE_ID());
+            savedPrice.setPRICE_LIST(priceDto.getPRICE_LIST());
+            savedPrice.setCURR(priceDto.getCURR());
+            savedPrice.setPRODUCT_ID(priceDto.getPRODUCT_ID());
+            savedPrice.setSTART_DATE(priceDto.getSTART_DATE());
+            savedPrice.setEND_DATE(priceDto.getEND_DATE());
+            savedPrice.setPRIORITY(priceDto.getPRIORITY());
+
+            if(brand.get()!=null){
+                savedPrice.setBrand(brand.get());
             }
 
             PRICES updatedPrice = priceBrandService.updatePrice(savedPrice);

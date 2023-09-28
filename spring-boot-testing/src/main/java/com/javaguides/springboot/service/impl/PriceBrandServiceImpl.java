@@ -75,6 +75,11 @@ public class PriceBrandServiceImpl implements PriceBrandService {
         return savedBrand;
     }
 
+    @Override
+    public BRAND saveBrand(BRAND brand) {
+        return brandRepository.save(brand);
+    }
+
     /*
      * Metodo getAllBrands para obtener todos los BRANDS en la base de datos
      *   --> Entrada: nada

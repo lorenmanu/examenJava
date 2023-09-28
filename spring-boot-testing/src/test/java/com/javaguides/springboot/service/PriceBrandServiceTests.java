@@ -87,7 +87,7 @@ public class PriceBrandServiceTests {
     @Test
     public void givenPriceObjectBrandObject_whenSavePriceObjectBrandObject_thenReturnPriceObjectBrandObject(){
         // given - precondition or setup
-        BDDMockito.given(priceRepository.findById(priceOne.getPRODUCT_ID())).willReturn(Optional.empty());
+        BDDMockito.given(priceRepository.findById(priceOne.getPRICE_ID())).willReturn(Optional.empty());
         BDDMockito.given(brandRepository.findById(brandOne.getId())).willReturn(Optional.empty());
 
         BDDMockito.given(brandRepository.save(brandOne)).willReturn(brandOne);
@@ -115,7 +115,7 @@ public class PriceBrandServiceTests {
     @Test
     public void givenExistingPriceObjectBrandObject_whenSavePriceObjectBrandObject_thenThrowsException(){
         // given - precondition or setup
-        BDDMockito.given(priceRepository.findById(priceOne.getPRODUCT_ID())).willReturn(Optional.of(priceOne));
+        BDDMockito.given(priceRepository.findById(priceOne.getPRICE_ID())).willReturn(Optional.of(priceOne));
         BDDMockito.given(brandRepository.findById(brandOne.getId())).willReturn(Optional.of(brandOne));
 
         // BDDMockito.given(brandRepository.save(brandOne)).willReturn(brandOne);

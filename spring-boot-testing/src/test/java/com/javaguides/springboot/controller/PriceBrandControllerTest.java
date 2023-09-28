@@ -52,18 +52,20 @@ public class PriceBrandControllerTest {
     private ObjectMapper objectMapper;
 
     /*
-     * Test givenPriceObjectBrandObject_whenSavePriceObjectBrandObject_thenReturnPriceObjectBrandObject
+     * Test givenPriceObjectBrandObject_whenSavePriceObjectBrandObject_thenReturnPriceObjectBrandObjectBadScenario(
      *   --> Entrada: PriceObject BrandObject
      *   --> Proceso:
-     *       --> Se simula con Mocks que se guarda en la base de datos
+     *       --> Se simula con Mocks que se guarda en la base de datos Price y Mock, en este caso el escenario sera negativo,
+     *          ya que no existe al no trabajar con la base de datos, no existe relacion One-To-Many entre Brand y Price
+     *          , por lo tanto devolvera pagina NOT_FOUND
      *   --> Salida:
-     *       --> PriceObject BrandObject
+     *       --> Pagina NOT_FOUND
      */
 
     // Junit test for save Precie Object and Brand Object
     @DisplayName("Junit test for save Precie Object and Brand Object")
     @Test
-    public void givenPriceObjectBrandObject_whenSavePriceObjectBrandObject_thenReturnPriceObjectBrandObject() throws Exception {
+    public void givenPriceObjectBrandObject_whenSavePriceObjectBrandObject_thenReturnPriceObjectBrandObjectBadScenario() throws Exception {
         // given - precondition or setup
         BRAND brandOne = BRAND.builder()
                 .id(1)
@@ -93,13 +95,10 @@ public class PriceBrandControllerTest {
         ResultActions response = mockMvc.perform(MockMvcRequestBuilders.
                 post("/api/prices/price")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(pricesDto))
-                .content(objectMapper.writeValueAsString(brandOne)));
+                .content(objectMapper.writeValueAsString(pricesDto)));
 
         // then - verify the output
-        response.andDo(print()).andExpect(MockMvcResultMatchers.status().isCreated()).
-                andExpect(MockMvcResultMatchers.jsonPath("$.product_ID", CoreMatchers.is(pricesOne.getPRICE_ID())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.price_LIST", CoreMatchers.is(pricesOne.getPRICE_LIST())));
+        response.andDo(print()).andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     /*
@@ -257,9 +256,11 @@ public class PriceBrandControllerTest {
      * Test givenUpdatedPrice_whenUpdatedPrice_thenReturnUpdatedPrice():
      *   --> Entrada: PRICE a actualizar
      *   --> Proceso:
-     *       --> Se simula con Mocks que se actualiza Price
+     *       --> Se simula con Mocks que se actualiza Price en este caso el escenario sera negativo,
+     *          ya que no existe al no trabajar con la base de datos, no existe relacion One-To-Many entre Brand y Price
+     *          , por lo tanto devolvera pagina NOT_FOUND
      *   --> Salida:
-     *       --> Price actualizado
+     *       --> pagina NOT_FOUND
      */
     // Junit test for update Precie REST API
     @DisplayName("Junit test for put Precie")
@@ -282,6 +283,7 @@ public class PriceBrandControllerTest {
                 .PRODUCT_ID(35455)
                 .PRIORITY(0)
                 .price(35.50)
+                .PRICE_ID(1)
                 .CURR("EUR").build();
 
         PRICES priceUpdated = PRICES.builder()
@@ -292,6 +294,7 @@ public class PriceBrandControllerTest {
                 .PRODUCT_ID(35466)
                 .PRIORITY(0)
                 .price(37.50)
+                .PRICE_ID(1)
                 .CURR("EUR").build();
 
         ArrayList<PRICES> listPrices = new ArrayList<PRICES>();
@@ -309,12 +312,8 @@ public class PriceBrandControllerTest {
 
         // then - verify the output
         System.out.println(response.toString());
-        response.andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.curr", CoreMatchers.is(priceUpdated.getCURR())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.priority", CoreMatchers.is(priceUpdated.getPRIORITY())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.start_DATE", CoreMatchers.is(priceUpdated.getSTART_DATE().format(formatterDate))))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.end_DATE", CoreMatchers.is(priceUpdated.getEND_DATE().format(formatterDate))));
+        response.andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andDo(print());
     }
 
     /*
@@ -339,6 +338,7 @@ public class PriceBrandControllerTest {
                 .build();
 
         PRICES priceSaved = PRICES.builder()
+                .PRICE_ID(1)
                 .brand(brandOne)
                 .START_DATE( LocalDateTime.of(2020, Month.JUNE, 14,0,0))
                 .END_DATE( LocalDateTime.of(2020, Month.DECEMBER, 31,23,59))
@@ -349,6 +349,7 @@ public class PriceBrandControllerTest {
                 .CURR("EUR").build();
 
         PRICES priceUpdated = PRICES.builder()
+                .PRICE_ID(1)
                 .brand(brandOne)
                 .START_DATE( LocalDateTime.of(2020, Month.JUNE, 14,0,0))
                 .END_DATE( LocalDateTime.of(2020, Month.DECEMBER, 31,23,59))

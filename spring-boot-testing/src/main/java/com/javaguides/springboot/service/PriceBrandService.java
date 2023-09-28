@@ -12,6 +12,8 @@ public interface PriceBrandService {
 
     BRAND savePriceBrand(PRICES price, BRAND brand);
 
+    BRAND saveBrand(BRAND brand);
+
     List<BRAND> getAllBrands();
 
     List<PRICES> getAllPrices();
